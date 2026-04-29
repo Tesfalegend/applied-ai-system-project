@@ -1,46 +1,65 @@
 """
-Command line runner for the Music Recommender Simulation.
+Music Recommender — agentic CLI entrypoint.
 
-This file helps you quickly run and test your recommender.
-
-You will implement the functions in recommender.py:
-- load_songs
-- score_song
-- recommend_songs
+Usage:
+    python -m src.main "I want chill lofi beats"
+    python -m src.main                          # interactive prompt
 """
+import sys
+from dotenv import load_dotenv
 
-from src.recommender import load_songs, recommend_songs
+load_dotenv()
+
+from src.recommender import load_songs, Recommender, Song
+from src.agent import RecommenderAgent
 
 
 def main() -> None:
-    songs = load_songs("data/songs.csv")
+    if len(sys.argv) > 1:
+        user_request = " ".join(sys.argv[1:])
+    else:
+        user_request = input("Describe the music you want: ").strip()
 
-    profiles = [
-        {
-            "name": "High-Energy Pop Fan",
-            "prefs": {"genre": "pop", "mood": "happy", "energy": 0.9}
-        },
-        {
-            "name": "Chill Lofi Studier",
-            "prefs": {"genre": "lofi", "mood": "chill", "energy": 0.4}
-        },
-        {
-            "name": "Deep Intense Rock Listener",
-            "prefs": {"genre": "rock", "mood": "intense", "energy": 0.95}
-        },
+    songs_data = load_songs("data/songs.csv")
+    song_objects = [
+        Song(
+            id=int(row["id"]),
+            title=row["title"],
+            artist=row["artist"],
+            genre=row["genre"],
+            mood=row["mood"],
+            energy=float(row["energy"]),
+            tempo_bpm=float(row["tempo_bpm"]),
+            valence=float(row["valence"]),
+            danceability=float(row["danceability"]),
+            acousticness=float(row["acousticness"]),
+        )
+        for row in songs_data
     ]
 
-    for profile in profiles:
-        print(f"\n{'=' * 50}")
-        print(f"User Profile: {profile['name']}")
-        print(f"{'=' * 50}")
-        recommendations = recommend_songs(profile['prefs'], songs, k=5)
-        print(f"\nTop {len(recommendations)} recommendations:\n")
-        for song, score, explanation in recommendations:
-            print(f"  {song['title']} by {song['artist']}")
-            print(f"  Score: {score:.2f}")
-            print(f"  Because: {explanation}")
-            print()
+    recommender = Recommender(song_objects)
+    agent = RecommenderAgent(recommender)
+
+    print(f"\nRunning agent for: {user_request!r}\n")
+    result = agent.run(user_request)
+
+    if result["error"]:
+        print(f"Error: {result['error']}")
+        return
+
+    print(f"Confidence: {result['confidence']:.2f}")
+    print(f"Reasoning : {result['reasoning']}\n")
+
+    print("Top 5 Recommendations:")
+    print("-" * 40)
+    for song in result["recommendations"]:
+        print(f"  {song['title']} by {song['artist']}")
+        print(f"  genre={song['genre']}  mood={song['mood']}  energy={song['energy']}")
+        print()
+
+    print("Step Trace:")
+    for step in result["steps"][:3]:
+        print(f"  [{step['step'].upper()}] done")
 
 
 if __name__ == "__main__":

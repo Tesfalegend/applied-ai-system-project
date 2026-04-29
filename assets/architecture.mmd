@@ -1,0 +1,20 @@
+flowchart TD
+    User([User: free-form request]) -->|"e.g., I'm running, need something upbeat"| Agent[RecommenderAgent]
+
+    Agent -->|"Step 1: PLAN"| LLM1[Claude Haiku 4.5: parse to UserProfile]
+    LLM1 -->|"UserProfile JSON"| Agent
+
+    Agent -->|"Step 2: ACT"| Rec[Recommender.recommend]
+    Catalog[(data/songs.csv)] --> Rec
+    Rec -->|"Top 5 songs and scores"| Agent
+
+    Agent -->|"Step 3: CHECK"| LLM2[Claude Haiku 4.5: confidence rating]
+    LLM2 -->|"0.0 to 1.0 plus reason"| Agent
+
+    Agent -->|"if confidence below 0.6, retry once"| Agent
+    Agent --> Output([Recommendations, reasoning, confidence])
+
+    Harness[Test Harness: 8 fixed cases] -.->|"runs end to end"| Agent
+    Harness -.->|"pass/fail, avg confidence"| Report([Summary report])
+
+    Logger[(Structured logs)] -.- Agent

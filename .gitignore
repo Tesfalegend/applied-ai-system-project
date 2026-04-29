@@ -8,8 +8,15 @@ __pycache__/
 env/
 venv/
 
+# Environment variables
+.env
+.env.*
+
 # OS files
 .DS_Store
 
 # Pytest cache
 .pytest_cache/
+
+# Agent logs (written locally, not committed)
+logs/

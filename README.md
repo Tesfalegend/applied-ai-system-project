@@ -1,7 +1,7 @@
 # Music Recommender Simulation
 ## Applied AI System Final Project
 
-> **Loom walkthrough:** _[paste link here after recording]_
+
 
 **Original project:** This repo started as my CodePath AI 110 Module 3 project, the [Music Recommender Simulation](https://github.com/codepath/ai110-module3show-musicrecommendersimulation-starter). The original goal was to score every song in an 18-track catalog against a hand-built user taste profile (genre, mood, energy) and return the top 5 recommendations with explanations.
 
